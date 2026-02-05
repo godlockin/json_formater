@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-i18n="pageTitle">JSON Visualizer Pro</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <style id="dynamic-styles"></style>
+</head>
+<body class="dark-theme">
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-left">
+                <div class="logo">
+                    <i class="fas fa-brackets-curly"></i>
+                    <span class="logo-text">JSON <strong>Visualizer</strong> Pro</span>
+                </div>
+            </div>
+            
+            <div class="header-center">
+                <div class="view-tabs">
+                    <button class="view-tab active" data-view="editor">
+                        <i class="fas fa-code"></i>
+                        <span>Editor</span>
+                    </button>
+                    <button class="view-tab" data-view="tree">
+                        <i class="fas fa-sitemap"></i>
+                        <span>Tree</span>
+                    </button>
+                    <button class="view-tab" data-view="visual">
+                        <i class="fas fa-project-diagram"></i>
+                        <span>Visual</span>
+                    </button>
+                    <button class="view-tab" data-view="diff">
+                        <i class="fas fa-code-compare"></i>
+                        <span>Compare</span>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="header-right">
+                <div class="toolbar-group">
+                    <button class="btn btn-icon" id="btn-format" title="Format (Ctrl+Shift+F)">
+                        <i class="fas fa-magic"></i>
+                    </button>
+                    <button class="btn btn-icon" id="btn-compact" title="Compact (Ctrl+Shift+C)">
+                        <i class="fas fa-compress-arrows-alt"></i>
+                    </button>
+                    <button class="btn btn-icon" id="btn-undo" title="Undo (Ctrl+Z)" disabled>
+                        <i class="fas fa-undo"></i>
+                    </button>
+                    <button class="btn btn-icon" id="btn-redo" title="Redo (Ctrl+Y)" disabled>
+                        <i class="fas fa-redo"></i>
+                    </button>
+                </div>
+                
+                <div class="toolbar-group">
+                    <button class="btn btn-icon" id="btn-search" title="Search (Ctrl+F)">
+                        <i class="fas fa-search"></i>
+                    </button>
+                    <button class="btn btn-icon" id="btn-settings">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                </div>
+                
+                <div class="toolbar-group">
+                    <button class="btn btn-primary" id="btn-import">
+                        <i class="fas fa-file-import"></i>
+                        <span>Import</span>
+                    </button>
+                    <button class="btn btn-success" id="btn-export">
+                        <i class="fas fa-download"></i>
+                        <span>Export</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="app-main">
+            <!-- Left Panel: Editor -->
+            <section class="panel panel-editor active" id="panel-editor">
+                <div class="panel-header">
+                    <div class="panel-info">
+                        <span class="panel-title">Editor</span>
+                        <div class="stats">
+                            <span class="stat" id="stat-chars">0 chars</span>
+                            <span class="stat" id="stat-lines">0 lines</span>
+                            <span class="stat" id="stat-size">0 KB</span>
+                        </div>
+                    </div>
+                    <div class="panel-actions">
+                        <button class="btn btn-sm" id="btn-clear">Clear</button>
+                        <button class="btn btn-sm" id="btn-sample">Sample</button>
+                    </div>
+                </div>
+                
+                <div class="panel-body">
+                    <div class="editor-container">
+                        <div class="line-numbers" id="line-numbers">1</div>
+                        <div class="editor-wrapper">
+                            <textarea id="json-input" class="json-editor" placeholder="Paste your JSON data here..." spellcheck="false"></textarea>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="error-bar" id="error-bar">
+                    <div class="error-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                    <div class="error-message" id="error-message"></div>
+                    <div class="error-position" id="error-position"></div>
+                </div>
+            </section>
+
+            <!-- Right Panel: Tree View -->
+            <section class="panel panel-tree" id="panel-tree">
+                <div class="panel-header">
+                    <div class="panel-info">
+                        <span class="panel-title">Tree View</span>
+                        <div class="tree-controls">
+                            <button class="btn btn-icon btn-sm" id="btn-expand-all" title="Expand All">
+                                <i class="fas fa-expand-alt"></i>
+                            </button>
+                            <button class="btn btn-icon btn-sm" id="btn-collapse-all" title="Collapse All">
+                                <i class="fas fa-compress-alt"></i>
+                            </button>
+                            <button class="btn btn-icon btn-sm" id="btn-copy-path" title="Copy Path">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="breadcrumbs" id="breadcrumbs">
+                        <span class="breadcrumb-root">$</span>
+                    </div>
+                </div>
+                
+                <div class="panel-body">
+                    <div class="tree-container" id="tree-container">
+                        <div class="empty-state">
+                            <i class="fas fa-tree"></i>
+                            <p>Enter JSON to see tree view</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Visual Panel -->
+            <section class="panel panel-visual" id="panel-visual">
+                <div class="panel-header">
+                    <div class="visual-tabs">
+                        <button class="visual-tab active" data-visual="structure">Structure</button>
+                        <button class="visual-tab" data-visual="chart">Chart</button>
+                        <button class="visual-tab" data-visual="network">Network</button>
+                        <button class="visual-tab" data-visual="topology">Topology</button>
+                    </div>
+                </div>
+                
+                <div class="panel-body">
+                    <!-- Structure View -->
+                    <div class="visual-content active" id="visual-structure">
+                        <div class="structure-container" id="structure-container"></div>
+                    </div>
+                    
+                    <!-- Chart View -->
+                    <div class="visual-content" id="visual-chart">
+                        <div class="chart-controls">
+                            <select id="chart-type">
+                                <option value="pie">Pie Chart</option>
+                                <option value="bar">Bar Chart</option>
+                                <option value="doughnut">Doughnut</option>
+                                <option value="polar">Polar Area</option>
+                                <option value="treemap">Treemap</option>
+                            </select>
+                            <select id="chart-data">
+                                <option value="types">Data Types</option>
+                                <option value="keys">Top Keys</option>
+                                <option value="depth">Nesting Depth</option>
+                            </select>
+                            <button class="btn btn-primary btn-sm" id="btn-generate-chart">Generate</button>
+                        </div>
+                        <div class="chart-container" id="chart-container">
+                            <canvas id="chart-canvas"></canvas>
+                        </div>
+                    </div>
+                    
+                    <!-- Network View -->
+                    <div class="visual-content" id="visual-network">
+                        <div class="network-container" id="network-container"></div>
+                    </div>
+                    
+                    <!-- Topology View -->
+                    <div class="visual-content" id="visual-topology">
+                        <div class="topology-controls">
+                            <label>
+                                <input type="checkbox" id="topology-physics" checked> Physics
+                            </label>
+                            <label>
+                                <input type="checkbox" id="topology-labels" checked> Labels
+                            </label>
+                        </div>
+                        <div class="topology-container" id="topology-container"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Diff Panel -->
+            <section class="panel panel-diff" id="panel-diff">
+                <div class="panel-header">
+                    <div class="diff-controls">
+                        <button class="btn btn-sm" id="btn-load-left">Load Left</button>
+                        <button class="btn btn-primary btn-sm" id="btn-compare">Compare</button>
+                        <button class="btn btn-sm" id="btn-load-right">Load Right</button>
+                    </div>
+                </div>
+                
+                <div class="panel-body">
+                    <div class="diff-container" id="diff-container">
+                        <div class="diff-panel diff-left">
+                            <div class="diff-title">Left JSON</div>
+                            <textarea id="diff-left" class="diff-input" placeholder="Paste JSON here..."></textarea>
+                        </div>
+                        <div class="diff-panel diff-right">
+                            <div class="diff-title">Right JSON</div>
+                            <textarea id="diff-right" class="diff-input" placeholder="Paste JSON here..."></textarea>
+                        </div>
+                    </div>
+                    <div class="diff-result" id="diff-result"></div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <div class="footer-left">
+                <span class="status-indicator" id="status-indicator">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Valid JSON</span>
+                </span>
+            </div>
+            <div class="footer-center">
+                <span id="cursor-position">Ln 1, Col 1</span>
+            </div>
+            <div class="footer-right">
+                <button class="btn btn-icon" id="btn-theme">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <select id="language-select">
+                    <option value="en">English</option>
+                    <option value="zh">中文</option>
+                    <option value="ja">日本語</option>
+                </select>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Search Modal -->
+    <div class="modal" id="search-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Search JSON</h3>
+                <button class="btn btn-icon close-modal"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="search-box">
+                    <input type="text" id="search-input" placeholder="Search keys, values, or JSONPath...">
+                    <button class="btn btn-primary" id="btn-search-json">Search</button>
+                </div>
+                <div class="search-options">
+                    <label><input type="checkbox" id="search-keys" checked> Keys</label>
+                    <label><input type="checkbox" id="search-values" checked> Values</label>
+                    <label><input type="checkbox" id="search-regex"> Regex</label>
+                    <label><input type="checkbox" id="search-case"> Case sensitive</label>
+                </div>
+                <div class="search-results" id="search-results"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal" id="settings-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Settings</h3>
+                <button class="btn btn-icon close-modal"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="settings-section">
+                    <h4>Editor</h4>
+                    <div class="setting-item">
+                        <label>Tab Size</label>
+                        <select id="setting-tab-size">
+                            <option value="2">2 spaces</option>
+                            <option value="4" selected>4 spaces</option>
+                            <option value="8">8 spaces</option>
+                        </select>
+                    </div>
+                    <div class="setting-item">
+                        <label>Font Size</label>
+                        <input type="range" id="setting-font-size" min="10" max="20" value="14">
+                        <span id="font-size-value">14px</span>
+                    </div>
+                    <div class="setting-item">
+                        <label>Auto Format</label>
+                        <input type="checkbox" id="setting-auto-format" checked>
+                    </div>
+                </div>
+                
+                <div class="settings-section">
+                    <h4>Performance</h4>
+                    <div class="setting-item">
+                        <label>Virtual Scroll</label>
+                        <input type="checkbox" id="setting-virtual-scroll" checked>
+                    </div>
+                    <div class="setting-item">
+                        <label>Max Render Items</label>
+                        <input type="number" id="setting-max-items" value="1000" min="100" max="10000">
+                    </div>
+                </div>
+                
+                <div class="settings-section">
+                    <h4>Advanced</h4>
+                    <div class="setting-item">
+                        <label>Sort Keys</label>
+                        <input type="checkbox" id="setting-sort-keys">
+                    </div>
+                    <div class="setting-item">
+                        <label>Escape Unicode</label>
+                        <input type="checkbox" id="setting-escape-unicode">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- Hidden file input -->
+    <input type="file" id="file-input" accept=".json,.txt" style="display: none;">
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vis-network@9.1.2/dist/vis-network.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
