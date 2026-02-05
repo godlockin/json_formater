@@ -1,0 +1,12 @@
+{
+  "app": {
+    "title": "JSON Visualizer Pro",
+    "description": "Advanced JSON editor and visualizer"
+  },
+  "editor": {
+    "placeholder": "Enter JSON here...",
+    "format": "Format",
+    "compact": "Compact",
+    "clear": "Clear"
+  }
+}

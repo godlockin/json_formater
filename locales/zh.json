@@ -1,0 +1,12 @@
+{
+  "app": {
+    "title": "JSON 可视化专家",
+    "description": "高级 JSON 编辑器和可视化工具"
+  },
+  "editor": {
+    "placeholder": "在此输入 JSON...",
+    "format": "格式化",
+    "compact": "压缩",
+    "clear": "清空"
+  }
+}
