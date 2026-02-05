@@ -1,5 +1,8 @@
 {
   "name": "json-formater",
   "compatibility_date": "2026-02-05",
-  "pages_build_output_dir": "public"
+  "pages_build_output_dir": "public",
+  "assets": {
+    "directory": "public"
+  }
 }
