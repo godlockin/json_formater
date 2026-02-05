@@ -104,7 +104,11 @@
                         <span class="panel-title">Result</span>
                     </div>
                     <div class="view-tabs">
-                        <button class="view-tab active" data-view="tree">
+                        <button class="view-tab active" data-view="formatted">
+                            <i class="fas fa-code"></i>
+                            <span>Formatted</span>
+                        </button>
+                        <button class="view-tab" data-view="tree">
                             <i class="fas fa-sitemap"></i>
                             <span>Tree</span>
                         </button>
@@ -135,8 +139,18 @@
                 </div>
                 
                 <div class="panel-body">
+                    <!-- Formatted JSON View -->
+                    <div class="result-content active" id="result-formatted">
+                        <div class="formatted-container" id="formatted-container">
+                            <div class="empty-state">
+                                <i class="fas fa-code"></i>
+                                <p>Enter JSON to see formatted result</p>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <!-- Tree View Content -->
-                    <div class="result-content active" id="result-tree">
+                    <div class="result-content" id="result-tree">
                         <div class="breadcrumbs" id="breadcrumbs">
                             <span class="breadcrumb-root">$</span>
                         </div>

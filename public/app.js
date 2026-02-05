@@ -9,7 +9,7 @@
 const State = {
     jsonData: null,
     rawText: '',
-    currentView: 'tree', // tree | visual (for right panel)
+    currentView: 'formatted', // formatted | tree | visual (for right panel)
     currentVisual: 'structure', // structure | chart | network | topology
     history: [],
     historyIndex: -1,
@@ -50,6 +50,7 @@ function cacheDOM() {
     DOM.errorPosition = document.getElementById('error-position');
     DOM.treeContainer = document.getElementById('tree-container');
     DOM.structureContainer = document.getElementById('structure-container');
+    DOM.formattedContainer = document.getElementById('formatted-container');
     DOM.statusIndicator = document.getElementById('status-indicator');
     DOM.cursorPosition = document.getElementById('cursor-position');
     DOM.toastContainer = document.getElementById('toast-container');
@@ -266,7 +267,9 @@ const JSONEditor = {
             JSONEditor.updateStatus(true);
             
             // Update views based on current selection
-            if (State.currentView === 'tree') {
+            if (State.currentView === 'formatted') {
+                FormattedView.render();
+            } else if (State.currentView === 'tree') {
                 TreeView.render();
             } else {
                 Visualizations[State.currentVisual].render();
@@ -372,6 +375,7 @@ const JSONEditor = {
         JSONEditor.updateLineNumbers();
         State.jsonData = null;
         JSONEditor.hideError();
+        FormattedView.clear();
         TreeView.clear();
         Visualizations.clear();
         Stats.update();
@@ -417,6 +421,49 @@ const JSONEditor = {
         JSONEditor.parse();
         History.add(formatted);
         Toast.show('Sample loaded', 'success');
+    }
+};
+
+// ============================================
+// Formatted View
+// ============================================
+const FormattedView = {
+    render: () => {
+        if (!State.jsonData) {
+            FormattedView.clear();
+            return;
+        }
+        
+        const formatted = JSON.stringify(State.jsonData, null, State.settings.tabSize);
+        DOM.formattedContainer.innerHTML = `<pre class="formatted-json">${FormattedView.syntaxHighlight(formatted)}</pre>`;
+    },
+    
+    syntaxHighlight: (json) => {
+        json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, (match) => {
+            let cls = 'json-number';
+            if (/^"/.test(match)) {
+                if (/:$/.test(match)) {
+                    cls = 'json-key';
+                } else {
+                    cls = 'json-string';
+                }
+            } else if (/true|false/.test(match)) {
+                cls = 'json-boolean';
+            } else if (/null/.test(match)) {
+                cls = 'json-null';
+            }
+            return '<span class="' + cls + '">' + match + '</span>';
+        });
+    },
+    
+    clear: () => {
+        DOM.formattedContainer.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-code"></i>
+                <p>Enter JSON to see formatted result</p>
+            </div>
+        `;
     }
 };
 
@@ -1324,7 +1371,8 @@ const ViewManager = {
         
         // Show/hide result content
         document.querySelectorAll('.result-content').forEach(content => {
-            const shouldShow = (viewName === 'tree' && content.id === 'result-tree') ||
+            const shouldShow = (viewName === 'formatted' && content.id === 'result-formatted') ||
+                              (viewName === 'tree' && content.id === 'result-tree') ||
                               (viewName === 'visual' && content.id === 'result-visual');
             content.classList.toggle('active', shouldShow);
         });
@@ -1340,8 +1388,10 @@ const ViewManager = {
             visualControls.style.display = viewName === 'visual' ? 'flex' : 'none';
         }
         
-        // Render visual content if needed
-        if (viewName === 'visual') {
+        // Render content if needed
+        if (viewName === 'formatted') {
+            FormattedView.render();
+        } else if (viewName === 'visual') {
             Visualizations[State.currentVisual].render();
         } else if (viewName === 'tree') {
             TreeView.render();
