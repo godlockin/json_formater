@@ -23,27 +23,6 @@
             </div>
             
             <div class="header-center">
-                <div class="view-tabs">
-                    <button class="view-tab active" data-view="editor">
-                        <i class="fas fa-code"></i>
-                        <span>Editor</span>
-                    </button>
-                    <button class="view-tab" data-view="tree">
-                        <i class="fas fa-sitemap"></i>
-                        <span>Tree</span>
-                    </button>
-                    <button class="view-tab" data-view="visual">
-                        <i class="fas fa-project-diagram"></i>
-                        <span>Visual</span>
-                    </button>
-                    <button class="view-tab" data-view="diff">
-                        <i class="fas fa-code-compare"></i>
-                        <span>Compare</span>
-                    </button>
-                </div>
-            </div>
-            
-            <div class="header-right">
                 <div class="toolbar-group">
                     <button class="btn btn-icon" id="btn-format" title="Format (Ctrl+Shift+F)">
                         <i class="fas fa-magic"></i>
@@ -58,7 +37,9 @@
                         <i class="fas fa-redo"></i>
                     </button>
                 </div>
-                
+            </div>
+            
+            <div class="header-right">
                 <div class="toolbar-group">
                     <button class="btn btn-icon" id="btn-search" title="Search (Ctrl+F)">
                         <i class="fas fa-search"></i>
@@ -84,7 +65,7 @@
         <!-- Main Content -->
         <main class="app-main">
             <!-- Left Panel: Editor -->
-            <section class="panel panel-editor active" id="panel-editor">
+            <section class="panel panel-editor" id="panel-editor">
                 <div class="panel-header">
                     <div class="panel-info">
                         <span class="panel-title">Editor</span>
@@ -116,119 +97,103 @@
                 </div>
             </section>
 
-            <!-- Right Panel: Tree View -->
-            <section class="panel panel-tree" id="panel-tree">
+            <!-- Right Panel: Result View -->
+            <section class="panel panel-result" id="panel-result">
                 <div class="panel-header">
                     <div class="panel-info">
-                        <span class="panel-title">Tree View</span>
-                        <div class="tree-controls">
-                            <button class="btn btn-icon btn-sm" id="btn-expand-all" title="Expand All">
-                                <i class="fas fa-expand-alt"></i>
-                            </button>
-                            <button class="btn btn-icon btn-sm" id="btn-collapse-all" title="Collapse All">
-                                <i class="fas fa-compress-alt"></i>
-                            </button>
-                            <button class="btn btn-icon btn-sm" id="btn-copy-path" title="Copy Path">
-                                <i class="fas fa-copy"></i>
-                            </button>
-                        </div>
+                        <span class="panel-title">Result</span>
                     </div>
-                    <div class="breadcrumbs" id="breadcrumbs">
-                        <span class="breadcrumb-root">$</span>
+                    <div class="view-tabs">
+                        <button class="view-tab active" data-view="tree">
+                            <i class="fas fa-sitemap"></i>
+                            <span>Tree</span>
+                        </button>
+                        <button class="view-tab" data-view="visual">
+                            <i class="fas fa-project-diagram"></i>
+                            <span>Visual</span>
+                        </button>
+                    </div>
+                    <div class="panel-actions tree-controls" id="tree-controls">
+                        <button class="btn btn-icon btn-sm" id="btn-expand-all" title="Expand All">
+                            <i class="fas fa-expand-alt"></i>
+                        </button>
+                        <button class="btn btn-icon btn-sm" id="btn-collapse-all" title="Collapse All">
+                            <i class="fas fa-compress-alt"></i>
+                        </button>
+                        <button class="btn btn-icon btn-sm" id="btn-copy-path" title="Copy Path">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                    </div>
+                    <div class="panel-actions visual-controls" id="visual-controls" style="display: none;">
+                        <div class="visual-tabs">
+                            <button class="visual-tab active" data-visual="structure">Structure</button>
+                            <button class="visual-tab" data-visual="chart">Chart</button>
+                            <button class="visual-tab" data-visual="network">Network</button>
+                            <button class="visual-tab" data-visual="topology">Topology</button>
+                        </div>
                     </div>
                 </div>
                 
                 <div class="panel-body">
-                    <div class="tree-container" id="tree-container">
-                        <div class="empty-state">
-                            <i class="fas fa-tree"></i>
-                            <p>Enter JSON to see tree view</p>
+                    <!-- Tree View Content -->
+                    <div class="result-content active" id="result-tree">
+                        <div class="breadcrumbs" id="breadcrumbs">
+                            <span class="breadcrumb-root">$</span>
                         </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Visual Panel -->
-            <section class="panel panel-visual" id="panel-visual">
-                <div class="panel-header">
-                    <div class="visual-tabs">
-                        <button class="visual-tab active" data-visual="structure">Structure</button>
-                        <button class="visual-tab" data-visual="chart">Chart</button>
-                        <button class="visual-tab" data-visual="network">Network</button>
-                        <button class="visual-tab" data-visual="topology">Topology</button>
-                    </div>
-                </div>
-                
-                <div class="panel-body">
-                    <!-- Structure View -->
-                    <div class="visual-content active" id="visual-structure">
-                        <div class="structure-container" id="structure-container"></div>
-                    </div>
-                    
-                    <!-- Chart View -->
-                    <div class="visual-content" id="visual-chart">
-                        <div class="chart-controls">
-                            <select id="chart-type">
-                                <option value="pie">Pie Chart</option>
-                                <option value="bar">Bar Chart</option>
-                                <option value="doughnut">Doughnut</option>
-                                <option value="polar">Polar Area</option>
-                                <option value="treemap">Treemap</option>
-                            </select>
-                            <select id="chart-data">
-                                <option value="types">Data Types</option>
-                                <option value="keys">Top Keys</option>
-                                <option value="depth">Nesting Depth</option>
-                            </select>
-                            <button class="btn btn-primary btn-sm" id="btn-generate-chart">Generate</button>
-                        </div>
-                        <div class="chart-container" id="chart-container">
-                            <canvas id="chart-canvas"></canvas>
+                        <div class="tree-container" id="tree-container">
+                            <div class="empty-state">
+                                <i class="fas fa-tree"></i>
+                                <p>Enter JSON to see tree view</p>
+                            </div>
                         </div>
                     </div>
                     
-                    <!-- Network View -->
-                    <div class="visual-content" id="visual-network">
-                        <div class="network-container" id="network-container"></div>
-                    </div>
-                    
-                    <!-- Topology View -->
-                    <div class="visual-content" id="visual-topology">
-                        <div class="topology-controls">
-                            <label>
-                                <input type="checkbox" id="topology-physics" checked> Physics
-                            </label>
-                            <label>
-                                <input type="checkbox" id="topology-labels" checked> Labels
-                            </label>
+                    <!-- Visual View Content -->
+                    <div class="result-content" id="result-visual">
+                        <!-- Structure View -->
+                        <div class="visual-content active" id="visual-structure">
+                            <div class="structure-container" id="structure-container"></div>
                         </div>
-                        <div class="topology-container" id="topology-container"></div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Diff Panel -->
-            <section class="panel panel-diff" id="panel-diff">
-                <div class="panel-header">
-                    <div class="diff-controls">
-                        <button class="btn btn-sm" id="btn-load-left">Load Left</button>
-                        <button class="btn btn-primary btn-sm" id="btn-compare">Compare</button>
-                        <button class="btn btn-sm" id="btn-load-right">Load Right</button>
-                    </div>
-                </div>
-                
-                <div class="panel-body">
-                    <div class="diff-container" id="diff-container">
-                        <div class="diff-panel diff-left">
-                            <div class="diff-title">Left JSON</div>
-                            <textarea id="diff-left" class="diff-input" placeholder="Paste JSON here..."></textarea>
+                        
+                        <!-- Chart View -->
+                        <div class="visual-content" id="visual-chart">
+                            <div class="chart-controls">
+                                <select id="chart-type">
+                                    <option value="pie">Pie Chart</option>
+                                    <option value="bar">Bar Chart</option>
+                                    <option value="doughnut">Doughnut</option>
+                                    <option value="polar">Polar Area</option>
+                                </select>
+                                <select id="chart-data">
+                                    <option value="types">Data Types</option>
+                                    <option value="keys">Top Keys</option>
+                                    <option value="depth">Nesting Depth</option>
+                                </select>
+                                <button class="btn btn-primary btn-sm" id="btn-generate-chart">Generate</button>
+                            </div>
+                            <div class="chart-container" id="chart-container">
+                                <canvas id="chart-canvas"></canvas>
+                            </div>
                         </div>
-                        <div class="diff-panel diff-right">
-                            <div class="diff-title">Right JSON</div>
-                            <textarea id="diff-right" class="diff-input" placeholder="Paste JSON here..."></textarea>
+                        
+                        <!-- Network View -->
+                        <div class="visual-content" id="visual-network">
+                            <div class="network-container" id="network-container"></div>
+                        </div>
+                        
+                        <!-- Topology View -->
+                        <div class="visual-content" id="visual-topology">
+                            <div class="topology-controls">
+                                <label>
+                                    <input type="checkbox" id="topology-physics" checked> Physics
+                                </label>
+                                <label>
+                                    <input type="checkbox" id="topology-labels" checked> Labels
+                                </label>
+                            </div>
+                            <div class="topology-container" id="topology-container"></div>
                         </div>
                     </div>
-                    <div class="diff-result" id="diff-result"></div>
                 </div>
             </section>
         </main>

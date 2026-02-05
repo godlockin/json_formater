@@ -9,8 +9,8 @@
 const State = {
     jsonData: null,
     rawText: '',
-    currentView: 'editor',
-    currentVisual: 'structure',
+    currentView: 'tree', // tree | visual (for right panel)
+    currentVisual: 'structure', // structure | chart | network | topology
     history: [],
     historyIndex: -1,
     maxHistory: 50,
@@ -220,6 +220,7 @@ const History = {
             State.historyIndex--;
             DOM.jsonInput.value = State.history[State.historyIndex];
             JSONEditor.parse();
+            JSONEditor.updateLineNumbers();
             History.updateButtons();
         }
     },
@@ -229,6 +230,7 @@ const History = {
             State.historyIndex++;
             DOM.jsonInput.value = State.history[State.historyIndex];
             JSONEditor.parse();
+            JSONEditor.updateLineNumbers();
             History.updateButtons();
         }
     },
@@ -253,6 +255,7 @@ const JSONEditor = {
             State.jsonData = null;
             JSONEditor.hideError();
             TreeView.clear();
+            Visualizations.clear();
             Stats.update();
             return;
         }
@@ -260,13 +263,20 @@ const JSONEditor = {
         try {
             State.jsonData = JSON.parse(text);
             JSONEditor.hideError();
-            TreeView.render();
-            Stats.update();
             JSONEditor.updateStatus(true);
+            
+            // Update views based on current selection
+            if (State.currentView === 'tree') {
+                TreeView.render();
+            } else {
+                Visualizations[State.currentVisual].render();
+            }
+            Stats.update();
         } catch (error) {
             JSONEditor.showError(error);
             State.jsonData = null;
             TreeView.clear();
+            Visualizations.clear();
             JSONEditor.updateStatus(false);
         }
     },
@@ -363,6 +373,7 @@ const JSONEditor = {
         State.jsonData = null;
         JSONEditor.hideError();
         TreeView.clear();
+        Visualizations.clear();
         Stats.update();
         History.add('');
     },
@@ -376,7 +387,6 @@ const JSONEditor = {
                 "Real-time parsing",
                 "Virtual scrolling",
                 "Multiple visualizations",
-                "Diff comparison",
                 "Advanced search"
             ],
             "config": {
@@ -608,9 +618,21 @@ const Stats = {
 // Visualizations
 // ============================================
 const Visualizations = {
+    clear: () => {
+        DOM.structureContainer.innerHTML = '';
+        const chartCanvas = document.getElementById('chart-canvas');
+        if (chartCanvas) {
+            const ctx = chartCanvas.getContext('2d');
+            ctx.clearRect(0, 0, chartCanvas.width, chartCanvas.height);
+        }
+    },
+
     structure: {
         render: () => {
-            if (!State.jsonData) return;
+            if (!State.jsonData) {
+                DOM.structureContainer.innerHTML = '';
+                return;
+            }
             
             DOM.structureContainer.innerHTML = '';
             const structure = Visualizations.structure.createTree(State.jsonData);
@@ -692,7 +714,7 @@ const Visualizations = {
             const data = Visualizations.chart.prepareData(State.jsonData, dataType);
             
             const config = {
-                type: type === 'treemap' ? 'treemap' : type,
+                type: type,
                 data: {
                     labels: data.labels,
                     datasets: [{
@@ -1216,83 +1238,6 @@ const Toast = {
 };
 
 // ============================================
-// Diff Comparison
-// ============================================
-const Diff = {
-    compare: () => {
-        const leftText = document.getElementById('diff-left').value.trim();
-        const rightText = document.getElementById('diff-right').value.trim();
-        
-        if (!leftText || !rightText) {
-            Toast.show('Please enter JSON in both panels', 'warning');
-            return;
-        }
-        
-        try {
-            const left = JSON.parse(leftText);
-            const right = JSON.parse(rightText);
-            
-            const changes = Utils.compareJSON(left, right);
-            Diff.renderResult(changes);
-        } catch (error) {
-            Toast.show('Invalid JSON: ' + error.message, 'error');
-        }
-    },
-
-    renderResult: (changes) => {
-        const container = document.getElementById('diff-result');
-        
-        if (changes.length === 0) {
-            container.innerHTML = '<div class="diff-unchanged">No differences found - JSON is identical</div>';
-            return;
-        }
-        
-        container.innerHTML = changes.map(c => {
-            let content = '';
-            switch (c.type) {
-                case 'added':
-                    content = `<div class="diff-added">+ ${c.path}: ${JSON.stringify(c.new)}</div>`;
-                    break;
-                case 'removed':
-                    content = `<div class="diff-removed">- ${c.path}: ${JSON.stringify(c.old)}</div>`;
-                    break;
-                case 'value':
-                    content = `
-                        <div class="diff-removed">- ${c.path}: ${JSON.stringify(c.old)}</div>
-                        <div class="diff-added">+ ${c.path}: ${JSON.stringify(c.new)}</div>
-                    `;
-                    break;
-                case 'type':
-                    content = `
-                        <div class="diff-removed">- ${c.path}: ${typeof c.old} = ${JSON.stringify(c.old)}</div>
-                        <div class="diff-added">+ ${c.path}: ${typeof c.new} = ${JSON.stringify(c.new)}</div>
-                    `;
-                    break;
-            }
-            return content;
-        }).join('');
-        
-        Toast.show(`Found ${changes.length} difference${changes.length !== 1 ? 's' : ''}`, 'success');
-    },
-
-    loadLeft: () => {
-        if (!State.jsonData) {
-            Toast.show('No JSON data loaded', 'warning');
-            return;
-        }
-        document.getElementById('diff-left').value = JSON.stringify(State.jsonData, null, State.settings.tabSize);
-    },
-
-    loadRight: () => {
-        if (!State.jsonData) {
-            Toast.show('No JSON data loaded', 'warning');
-            return;
-        }
-        document.getElementById('diff-right').value = JSON.stringify(State.jsonData, null, State.settings.tabSize);
-    }
-};
-
-// ============================================
 // File Operations
 // ============================================
 const FileOps = {
@@ -1372,19 +1317,34 @@ const ViewManager = {
     switchView: (viewName) => {
         State.currentView = viewName;
         
-        // Update tabs
-        document.querySelectorAll('.view-tab').forEach(tab => {
+        // Update tabs in result panel
+        document.querySelectorAll('.panel-result .view-tab').forEach(tab => {
             tab.classList.toggle('active', tab.dataset.view === viewName);
         });
         
-        // Update panels
-        document.querySelectorAll('.panel').forEach(panel => {
-            panel.classList.toggle('active', panel.id === `panel-${viewName}`);
+        // Show/hide result content
+        document.querySelectorAll('.result-content').forEach(content => {
+            const shouldShow = (viewName === 'tree' && content.id === 'result-tree') ||
+                              (viewName === 'visual' && content.id === 'result-visual');
+            content.classList.toggle('active', shouldShow);
         });
+        
+        // Show/hide appropriate controls
+        const treeControls = document.getElementById('tree-controls');
+        const visualControls = document.getElementById('visual-controls');
+        
+        if (treeControls) {
+            treeControls.style.display = viewName === 'tree' ? 'flex' : 'none';
+        }
+        if (visualControls) {
+            visualControls.style.display = viewName === 'visual' ? 'flex' : 'none';
+        }
         
         // Render visual content if needed
         if (viewName === 'visual') {
             Visualizations[State.currentVisual].render();
+        } else if (viewName === 'tree') {
+            TreeView.render();
         }
     },
 
@@ -1467,8 +1427,8 @@ const KeyboardShortcuts = {
 // Event Listeners
 // ============================================
 function setupEventListeners() {
-    // View tabs
-    document.querySelectorAll('.view-tab').forEach(tab => {
+    // View tabs (right panel)
+    document.querySelectorAll('.panel-result .view-tab').forEach(tab => {
         tab.addEventListener('click', () => ViewManager.switchView(tab.dataset.view));
     });
     
@@ -1497,11 +1457,6 @@ function setupEventListeners() {
     
     // Chart controls
     document.getElementById('btn-generate-chart').addEventListener('click', Visualizations.chart.render);
-    
-    // Diff controls
-    document.getElementById('btn-load-left').addEventListener('click', Diff.loadLeft);
-    document.getElementById('btn-load-right').addEventListener('click', Diff.loadRight);
-    document.getElementById('btn-compare').addEventListener('click', Diff.compare);
     
     // Topology controls
     document.getElementById('topology-physics').addEventListener('change', Visualizations.topology.togglePhysics);
@@ -1563,6 +1518,9 @@ function init() {
     KeyboardShortcuts.init();
     JSONEditor.updateLineNumbers();
     History.updateButtons();
+    
+    // Initialize view
+    ViewManager.switchView('tree');
     
     // Load sample data
     setTimeout(() => {
