@@ -1,0 +1,7 @@
+{
+  "name": "json-formater",
+  "version": "1.0.0",
+  "scripts": {
+    "deploy": "wrangler pages deploy public"
+  }
+}
