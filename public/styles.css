@@ -275,8 +275,10 @@ body {
 .app-main {
     flex: 1;
     display: flex;
+    flex-direction: row; /* Explicitly set row for desktop */
     overflow: hidden;
     position: relative;
+    width: 100%;
 }
 
 /* Panels */
@@ -285,17 +287,18 @@ body {
     flex-direction: column;
     overflow: hidden;
     background-color: var(--bg-primary);
+    height: 100%;
 }
 
 .panel-editor {
-    flex: 1;
-    min-width: 300px;
+    flex: 1 1 50%; /* Grow, shrink, and start at 50% */
+    min-width: 0; /* Allow shrinking below content size */
     border-right: 1px solid var(--border-color);
 }
 
 .panel-result {
-    flex: 1;
-    min-width: 300px;
+    flex: 1 1 50%;
+    min-width: 0;
 }
 
 /* Panel Header */
@@ -1147,7 +1150,7 @@ body {
 /* ============================================
    Responsive
    ============================================ */
-@media (max-width: 768px) {
+@media (max-width: 600px) {
     .app-header {
         flex-wrap: wrap;
         height: auto;
@@ -1165,15 +1168,16 @@ body {
     }
     
     .panel-editor {
-        flex: none;
-        height: 50%;
+        flex: 1; /* Allow it to share space equally */
+        height: auto;
+        min-height: 300px;
         border-right: none;
         border-bottom: 1px solid var(--border-color);
     }
     
     .panel-result {
-        flex: none;
-        height: 50%;
+        flex: 1;
+        height: auto;
     }
     
     .view-tabs {
