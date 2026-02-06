@@ -100,39 +100,46 @@ json_formater/
 
 ## 🚀 Deployment
 
-### Cloudflare Pages (Recommended)
+### Option 1: Cloudflare Pages (Recommended)
 
 1. **Connect Git Repository**
    - Login to [Cloudflare Dashboard](https://dash.cloudflare.com)
    - Go to **Workers & Pages** → **Create Application** → **Pages**
    - Click **Connect to Git**
-   - Select your GitHub repository: `godlockin/json_formater`
-   - Configure:
-     - Build command: (leave empty)
-     - Output directory: `/`
+   - Select your GitHub repository
+   - Configure build settings:
+     - **Framework preset**: None
+     - **Build command**: (Leave empty)
+     - **Build output directory**: `public`
    - Click **Save and Deploy**
 
-2. **Direct Upload**
-   - Go to **Workers & Pages** → **Create Application** → **Pages**
-   - Select **Direct Upload**
-   - Drag and drop all files
-   - Deploy
+### Option 2: GitHub Pages
 
-### Local Development
+1. **Configure Repository**
+   - Go to your repository **Settings** → **Pages**
+   - Under **Build and deployment** > **Source**, select **Deploy from a branch**
+   - Under **Branch**, select `main` (or `gh-pages` if you use a separate branch) and folder `/ (root)` (or `/public` if supported, otherwise you may need a workflow)
+   - *Note: Since this project serves from `/public`, using a GitHub Action or pushing the content of `/public` to a `gh-pages` branch is the standard approach.*
+   
+   **Standard Workflow approach:**
+   This repository includes a `.github/workflows/deploy.yml` (if applicable) or you can set up a simple static site workflow.
+
+### Option 3: Local Development
 
 ```bash
 # Clone the repository
 git clone https://github.com/godlockin/json_formater.git
 cd json_formater
 
-# Start a local server
-python3 -m http.server 8080
+# Install dependencies (for Wrangler)
+npm install
 
-# Or with Node.js
-npx serve .
+# Start local server (simulating Cloudflare Pages)
+npm run deploy -- --port 8888
+# Or simply: npx wrangler pages dev public
 
-# Open in browser
-open http://localhost:8080
+# Alternative: Python simple server
+python3 -m http.server 8080 --directory public
 ```
 
 ## 📊 Performance Metrics
